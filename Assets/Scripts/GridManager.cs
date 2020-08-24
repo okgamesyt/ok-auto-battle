@@ -1,18 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class GridManager : Manager<GridManager>
 {  
-    public Tilemap grid;
+    public GameObject terrainGrid;
 
     protected Graph graph;
     protected Dictionary<Team, int> startPositionPerTeam;
-
+    
+    List<Tile> allTiles = new List<Tile>();
     protected void Awake()
     {
         base.Awake();
+        allTiles = terrainGrid.GetComponentsInChildren<Tile>().ToList();
+        
         InitializeGraph();
         startPositionPerTeam = new Dictionary<Team, int>();
         startPositionPerTeam.Add(Team.Team1, 0);
@@ -53,21 +57,29 @@ public class GridManager : Manager<GridManager>
         return graph.Neighbors(to);
     }
 
+    public Node GetNodeForTile(Tile t)
+    {
+        var allNodes = graph.Nodes;
+
+        for (int i = 0; i < allNodes.Count; i++)
+        {
+            if (t.transform.GetSiblingIndex() == allNodes[i].index)
+            {
+                return allNodes[i];
+            }
+        }
+
+        return null;
+    }
+    
     private void InitializeGraph()
     {
         graph = new Graph();
 
-        for (int n = grid.cellBounds.xMin; n < grid.cellBounds.xMax; n++)
+        for (int i = 0; i < allTiles.Count; i++)
         {
-            for (int p = grid.cellBounds.yMin; p < grid.cellBounds.yMax; p++)
-            {
-                Vector3Int localPlace = (new Vector3Int(n, p, (int)grid.transform.position.y));
-                Vector3 place = grid.CellToWorld(localPlace);
-                if (grid.HasTile(localPlace))
-                {
-                    graph.AddNode(place);
-                }
-            }
+            Vector3 place = allTiles[i].transform.position;
+            graph.AddNode(place);
         }
 
         var allNodes = graph.Nodes;

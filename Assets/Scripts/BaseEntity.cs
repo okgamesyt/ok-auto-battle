@@ -129,10 +129,15 @@ public class BaseEntity : MonoBehaviour
         {
             //Free previous node
             currentNode.SetOccupied(false);
-            currentNode = destination;
+            SetCurrentNode(destination);
         }
     }
 
+    public void SetCurrentNode(Node node)
+    {
+        currentNode = node;
+    }
+    
     public void TakeDamage(int amount)
     {
         baseHealth -= amount;
